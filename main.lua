@@ -13,6 +13,8 @@ local PLASMA_COMBUSTION_POWER = 0.7
 local PLASMA_REACTION_POWER = 12
 local PLASMA_DISIPATION_RATE = 0.01
 local PLASMA_IDEAL_DISAPATION_TEMP = 750
+local PLASMA_CRITICAL_TEMP = 1300
+local PLASMA_TO_CELL_DISIPATION = 0.2
 local PI_INITIATION_TEMP = 150
 local PI_INITIATION_TEMP_RANGE = 5
 local PI_FUEL_TEMP = 19
@@ -58,6 +60,12 @@ end
 function  wait(sec)
     os.execute("sleep "..tostring(sec))
 end
+function cap(num, cap)
+    if num>cap then
+        num1 = cap
+    end
+    return cap
+end
 function getPiTempIncrease(num)
     return (piFuelInput[num]*PLASMA_COMBUSTION_POWER) + math.random(0-COMBUSTION_TEMP_RANGE, COMBUSTION_TEMP_RANGE)/100*piFuelInput[num]
 end
@@ -95,6 +103,15 @@ end
 function updateCellPlasma()
     for x=1,4 do
         cellPD[x] = cellPD[x] + plasmaOutput[x]/CELL_PLASMA_DIVIDER
+        cellTemp[x] = cap(cellTemp[x]+(combustionTemp[x]*PLASMA_TO_CELL_DISIPATION), combustionTemp[x])
+        temp = PLASMA_IDEAL_DISAPATION_TEMP-cellTemp[x]
+        if temp>=0 then
+            temp = PLASMA_DISIPATION_RATE*temp
+        end
+        if temp>0-PLASMA_CRITICAL_TEMP then
+            cellPD[x] = cellPD[x] - PLASMA_DISIPATION_RATE
+        end
+        cellPD[x] = cap(cellPD[x], 0)
     end
 end
 function piUpdate()
@@ -106,7 +123,7 @@ function cellUpdate()
     updateCellPlasma()
 end
 
-piFuelInput[1] = 80
+piFuelInput[1] = 100
 while true do
     piUpdate()
     cellUpdate()
