@@ -16,6 +16,7 @@ local PLASMA_IDEAL_DISAPATION_TEMP = 750
 local PI_INITIATION_TEMP = 150
 local PI_INITIATION_TEMP_RANGE = 5
 local PI_FUEL_TEMP = 19
+local CELL_PLASMA_DIVIDER = 5
 --RUNNING DATA
 local piTemp = {}
 local combustionTemp = {}
@@ -93,7 +94,7 @@ function updatePlamaOutput()
 end
 function updateCellPlasma()
     for x=1,4 do
-        cellPD[x] = cellPD[x] + plasmaOutput[x]/5
+        cellPD[x] = cellPD[x] + plasmaOutput[x]/CELL_PLASMA_DIVIDER
     end
 end
 function piUpdate()
